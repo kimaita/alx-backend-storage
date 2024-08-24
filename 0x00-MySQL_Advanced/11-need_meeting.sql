@@ -1,0 +1,7 @@
+-- Creates a view on students that lists tudents that have a score under 80
+-- and no last_meeting or more than 1 month.
+CREATE VIEW need_meeting AS
+SELECT name 
+FROM students
+WHERE score < 80 and (last_meeting IS NULL OR DATEDIFF(CURDATE(), last_meeting)>30);
+
