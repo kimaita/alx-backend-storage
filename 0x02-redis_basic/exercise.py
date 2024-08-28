@@ -13,8 +13,8 @@ def count_calls(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(*args, **kwargs):
         obj = args[0]
-        obj._redis.incrby(method.__qualname__)
         ret = method(*args, **kwargs)
+        obj._redis.incrby(method.__qualname__)
         return ret
 
     return wrapper
