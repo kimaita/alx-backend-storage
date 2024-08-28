@@ -30,7 +30,7 @@ def count_calls(method: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         r = args[0]._redis
         ret = method(*args, **kwargs)
-        r.incrby(method.__qualname__)
+        r.incr(method.__qualname__)
         return ret
 
     return wrapper

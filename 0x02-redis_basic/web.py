@@ -13,7 +13,7 @@ def track_calls(func):
     def wrapper(*args):
         r = redis.Redis(decode_responses=True)
         key = f"count:{args[0]}"
-        r.incrby(key)
+        r.incr(key)
         r.expire(key, 10, nx=True)
         ret = func(*args)
         return ret
