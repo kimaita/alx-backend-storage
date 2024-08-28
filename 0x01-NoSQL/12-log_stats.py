@@ -30,15 +30,15 @@ def main():
     client = MongoClient("mongodb://127.0.0.1:27017")
     collection = client.logs.nginx
 
-    print(f"{collection.count_documents({})} logs")
+    print("{} logs".format(collection.count_documents({})))
 
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
     counts = {m["_id"]: m["count"] for m in method_count(collection, methods)}
     print("Methods:")
     for method in methods:
-        print(f"\tmethod {method}: {counts.get(method) or 0}")
+        print("\tmethod {}: {}".format(method, counts.get(method) or 0))
 
-    print(f"{get_count(collection)} status check")
+    print("{} status check".format(get_count(collection)))
 
 
 if __name__ == "__main__":
