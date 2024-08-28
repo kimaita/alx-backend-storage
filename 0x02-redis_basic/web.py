@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""""""
+"""Contains functions for tracking requests for a page"""
 
 import requests
 import redis
@@ -13,9 +13,9 @@ def track_calls(func):
     def wrapper(*args):
         r = redis.Redis(decode_responses=True)
         key = f"count:{args[0]}"
-        ret = func(*args)
         r.incrby(key)
         r.expire(key, 10, nx=True)
+        ret = func(*args)
         return ret
 
     return wrapper
@@ -23,6 +23,13 @@ def track_calls(func):
 
 @track_calls
 def get_page(url: str) -> str:
-    """"""
+    """Gets and returns the HTML content of the page at `url`
+
+    Args
+        url(str)
+
+    Returns
+        the url's HTML content
+    """
     r = requests.get(url)
     return r.text
