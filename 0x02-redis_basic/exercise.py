@@ -12,9 +12,25 @@ def count_calls(method: Callable) -> Callable:
 
     @wraps(method)
     def wrapper(*args, **kwargs):
-        obj = args[0]
+        r = args[0]._redis
         ret = method(*args, **kwargs)
-        obj._redis.incrby(method.__qualname__)
+        r.incrby(method.__qualname__)
+        return ret
+
+    return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """Decorator for storing the arguments and results for `method`"""
+
+    @wraps(method)
+    def wrapper(*args, **kwargs):
+        r = args[0]._redis
+        key_in = f"{method.__qualname__}:inputs"
+        key_out = f"{method.__qualname__}:outputs"
+        r.rpush(key_in, str(args[1:]))
+        ret = method(*args, **kwargs)
+        r.rpush(key_out, ret)
         return ret
 
     return wrapper
@@ -28,6 +44,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Stores data in redis using a random key.
 
