@@ -7,6 +7,22 @@ from typing import Any, Callable, Union, Optional
 import uuid
 
 
+def replay(method: Callable) -> None:
+    """Displays the history of calls to `method`.
+    Shows the number of calls, and inputs/outputs of each call
+    """
+    r = redis.Redis(decode_responses=True)
+    key = method.__qualname__
+    count = r.get(key)
+    print(f"{key} was called {count} times:")
+
+    def hist(io):
+        return r.lrange(f"{key}:{io}", 0, -1)
+
+    for arg, res in zip(hist("inputs"), hist("outputs")):
+        print(f"{key}(*{arg}) -> {res}")
+
+
 def count_calls(method: Callable) -> Callable:
     """Decorator for counting and caching the number of calls to `method`"""
 
