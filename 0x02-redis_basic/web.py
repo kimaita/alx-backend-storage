@@ -5,16 +5,16 @@ import requests
 import redis
 from functools import wraps
 
+r = redis.Redis(decode_responses=True)
+
 
 def track_calls(func):
     """Counts each request to get a requested page."""
 
     @wraps(func)
     def wrapper(*args):
-        r = redis.Redis(decode_responses=True)
         key = f"count:{args[0]}"
         r.incr(key)
-        r.expire(key, 10, nx=True)
         ret = func(*args)
         return ret
 
@@ -31,5 +31,12 @@ def get_page(url: str) -> str:
     Returns
         the url's HTML content
     """
-    r = requests.get(url)
-    return r.text
+    cached = r.get(url)
+    if cached:
+        return cached
+
+    resp = requests.get(url)
+    html = resp.text
+    r.set(url, html, ex=10)
+
+    return html
