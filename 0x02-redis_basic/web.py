@@ -32,7 +32,7 @@ def get_page(url: str) -> str:
     """
     cached = r.get(url)
     if cached:
-        return cached
+        return cached.decode()
 
     resp = requests.get(url)
     html = resp.text
