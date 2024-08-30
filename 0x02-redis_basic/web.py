@@ -5,22 +5,27 @@ import requests
 import redis
 from functools import wraps
 
-r = redis.Redis()
 
-
-def track_calls(func):
-    """Counts each request to get a requested page."""
+def cacheable(func):
+    """Caches the result of a request."""
 
     @wraps(func)
     def wrapper(*args):
-        key = f"count:{args[0]}"
-        r.incr(key)
-        return func(*args)
+        r = redis.Redis(decode_responses=True)
+        url = args[0]
+        r.incr(f"count:{url}")
+        cached = r.get(url)
+        if cached:
+            return cached
+
+        html = func(*args)
+        r.set(url, html, ex=10)
+        return html
 
     return wrapper
 
 
-@track_calls
+@cacheable
 def get_page(url: str) -> str:
     """Gets and returns the HTML content of the page at `url`
 
@@ -30,12 +35,6 @@ def get_page(url: str) -> str:
     Returns
         the url's HTML content
     """
-    cached = r.get(url)
-    if cached:
-        return cached.decode()
 
     resp = requests.get(url)
-    html = resp.text
-    r.set(url, html, ex=10)
-
-    return html
+    return resp.text
