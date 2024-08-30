@@ -5,7 +5,7 @@ import requests
 import redis
 from functools import wraps
 
-r = redis.Redis(decode_responses=True)
+r = redis.Redis()
 
 
 def track_calls(func):
@@ -15,8 +15,7 @@ def track_calls(func):
     def wrapper(*args):
         key = f"count:{args[0]}"
         r.incr(key)
-        ret = func(*args)
-        return ret
+        return func(*args)
 
     return wrapper
 
